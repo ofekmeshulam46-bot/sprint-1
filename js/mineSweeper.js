@@ -19,7 +19,104 @@ var gGame = {
   secsPassed: 0,
 }
 
-var gBoard
+// var gBoard
+
+
+
+
+function onInit() {
+ var gBoard = settingMinesAroundCount()
+  // gBoard = buildBoard()
+  buildBoard()
+  renderBoard(gBoard)
+}
+
+function buildBoard() {
+  var board = []
+  for (var i = 0; i < gLevel.SIZE; i++) {
+    board.push([])
+    for (var j = 0; j < gLevel.SIZE; j++) {
+      board[i][j] = {
+        minesAroundCount: 0,
+        isRevealed: false,
+        isMine: false,
+        isMarked: false,
+      }
+    }
+  }
+  board[1][1].isMine = true
+  board[2][2].isMine = true
+
+  return board
+}
+
+function settingMinesAroundCount() {
+  var builtBoard = buildBoard()
+  for (var i = 0; i < builtBoard.length; i++) {
+    for (var j = 0; j < builtBoard[i].length; j++) {
+      setMinesNegsCount(i, j, builtBoard)
+    }
+  }
+
+  console.log('builtBoard:', builtBoard)
+  console.table(builtBoard)
+  debugger
+  return buildBoard
+  
+}
+
+function setMinesNegsCount(rowIdx, colIdx, mat) {
+  var neighborsCount = 0
+  for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
+    if (i < 0 || i >= mat.length) continue
+
+    for (var j = colIdx - 1; j <= colIdx + 1; j++) {
+      if (j < 0 || j >= mat[i].length) continue
+      if (i === rowIdx && j === colIdx) continue
+
+      if (mat[i][j].isMine === true) mat[rowIdx][colIdx].minesAroundCount++
+    }
+  }
+  return mat
+}
+
+//   return board
+// }
+
+function renderBoard() {
+  var strHTML = ''
+    console.log('gBoard:', gBoard)
+  console.table(gBoard)
+  var lines = gBoard.length
+  console.log('lines:', lines)
+  var columns = gBoard[0].length
+  console.log('columns:', columns)
+  for (var i = 0; i < lines; i++) {
+    strHTML += '<tr>'
+    for (var j = 0; j < columns; j++) {
+      const cell = gBoard[i][j]
+      const className = `cell cell-${i}-${j}`
+
+      strHTML += `<td class="${className}">
+                            ${cell.minesAroundCount}
+                        </td>`
+    }
+    strHTML += '</tr>'
+  }
+  const elContainer = document.querySelector('.board')
+  elContainer.innerHTML = strHTML
+}
+
+
+
+
+
+
+
+
+
+
+
 
 // buildBoard()
 
@@ -60,87 +157,14 @@ var gBoard
 //   console.log('elModal:', elModal)
 // }
 
-function onInit() {
-  // gBoard = settingMinesAroundCount()
-  gBoard = buildBoard()
-  buildBoard()
-  renderBoard(gBoard)
-}
 
-function buildBoard() {
-  var board = []
-  for (var i = 0; i < gLevel.SIZE; i++) {
-    board.push([])
-    for (var j = 0; j < gLevel.SIZE; j++) {
-      board[i][j] = {
-        minesAroundCount: 0,
-        isRevealed: false,
-        isMine: false,
-        isMarked: false,
-      }
 
-      console.log(board)
-      console.table(board)
-      console.log('i,j:', i, j)
-    }
-  }
-  board[1][1].isMine = true
-  board[2][2].isMine = true
-  console.log(board)
-  console.table(board)
 
-  return board
-}
 
-function settingMinesAroundCount() {
-  var builtBoard = buildBoard()
-  for (var i = 0; i < builtBoard.length; i++) {
-    for (var j = 0; j < builtBoard[i].length; j++) {
-      setMinesNegsCount(i, j, builtBoard)
-    }
-  }
 
-  console.log('builtBoard:', builtBoard)
-  console.table(builtBoard)
-  return buildBoard
-}
 
-function setMinesNegsCount(rowIdx, colIdx, mat) {
-  var neighborsCount = 0
-  debugger
-  for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
-    if (i < 0 || i >= mat.length) continue
 
-    for (var j = colIdx - 1; j <= colIdx + 1; j++) {
-      if (j < 0 || j >= mat[i].length) continue
-      if (i === rowIdx && j === colIdx) continue
 
-      if (mat[i][j].isMine === true) mat[rowIdx][colIdx].minesAroundCount++
-    }
-  }
-  return mat
-}
-
-//   return board
-// }
-
-function renderBoard(board) {
-  var strHTML = ''
-  for (var i = 0; i < board.length; i++) {
-    strHTML += '<tr>'
-    for (var j = 0; j < board[0].length; j++) {
-      const cell = board[i][j]
-      const className = `cell cell-${i}-${j}`
-
-      strHTML += `<td class="${className}">
-                            ${cell.minesAroundCount}
-                        </td>`
-    }
-    strHTML += '</tr>'
-  }
-  const elContainer = document.querySelector('.board')
-  elContainer.innerHTML = strHTML
-}
 
 // // location is an object like this - { i: 2, j: 7 }
 
@@ -200,3 +224,5 @@ function renderBoard(board) {
 // // function onPlayAgain() {
 
 // // }
+
+
