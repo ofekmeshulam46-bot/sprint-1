@@ -7,6 +7,8 @@
 // isMarked: false
 // }
 
+var MINE = '💣'
+
 var gLevel = {
   SIZE: 4,
   MINES: 2,
@@ -21,13 +23,15 @@ var gGame = {
 
 // var gBoard
 
-
-
+var gBoard = buildBoard()
+// settingMinesAroundCount()
 
 function onInit() {
- var gBoard = settingMinesAroundCount()
-  // gBoard = buildBoard()
-  buildBoard()
+  var check = buildBoard()
+  gBoard = buildBoard()
+  settingMinesAroundCount(gBoard)
+  console.log('gBoard:', gBoard)
+  console.table(gBoard)
   renderBoard(gBoard)
 }
 
@@ -50,19 +54,12 @@ function buildBoard() {
   return board
 }
 
-function settingMinesAroundCount() {
-  var builtBoard = buildBoard()
-  for (var i = 0; i < builtBoard.length; i++) {
-    for (var j = 0; j < builtBoard[i].length; j++) {
-      setMinesNegsCount(i, j, builtBoard)
+function settingMinesAroundCount(board) {
+  for (var i = 0; i < board.length; i++) {
+    for (var j = 0; j < board[i].length; j++) {
+      setMinesNegsCount(i, j, board)
     }
   }
-
-  console.log('builtBoard:', builtBoard)
-  console.table(builtBoard)
-  debugger
-  return buildBoard
-  
 }
 
 function setMinesNegsCount(rowIdx, colIdx, mat) {
@@ -85,20 +82,16 @@ function setMinesNegsCount(rowIdx, colIdx, mat) {
 
 function renderBoard() {
   var strHTML = ''
-    console.log('gBoard:', gBoard)
-  console.table(gBoard)
   var lines = gBoard.length
-  console.log('lines:', lines)
   var columns = gBoard[0].length
-  console.log('columns:', columns)
   for (var i = 0; i < lines; i++) {
     strHTML += '<tr>'
     for (var j = 0; j < columns; j++) {
       const cell = gBoard[i][j]
       const className = `cell cell-${i}-${j}`
-
-      strHTML += `<td class="${className}">
-                            ${cell.minesAroundCount}
+      var cellContent = cell.isMine  ?  MINE : cell.minesAroundCount  
+      strHTML += `<td class="${className}" onclick= onCellClicked(this,${i},${j})>
+                           ${cellContent}
                         </td>`
     }
     strHTML += '</tr>'
@@ -107,17 +100,12 @@ function renderBoard() {
   elContainer.innerHTML = strHTML
 }
 
-
-
-
-
-
-
-
-
-
-
-
+function onCellClicked(elCell, i, j) {
+  // var cell= document.querySelector(elcell.`cell-${i}-${j}`)
+  console.log('clicked:', elCell.innerHTML, i, j)
+  // cell.style.color = 'blueviolet'  // reg color wont work on emoji but background ye
+  // elCell.`cell-${i}-${j}`.color = 'blueviolet'
+}
 // buildBoard()
 
 // renderBoard(board)
@@ -156,15 +144,6 @@ function renderBoard() {
 //   elModal.hidden = true
 //   console.log('elModal:', elModal)
 // }
-
-
-
-
-
-
-
-
-
 
 // // location is an object like this - { i: 2, j: 7 }
 
@@ -224,5 +203,3 @@ function renderBoard() {
 // // function onPlayAgain() {
 
 // // }
-
-

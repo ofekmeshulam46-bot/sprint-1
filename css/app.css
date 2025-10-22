@@ -4,15 +4,18 @@ body {
   text-align: center;
 }
 
-  .board-container {
+.board-container {
   margin: auto;
 }
 
 .cell {
+  /* display: none; */
+  /* opacity: 0 */
   font-size: 1.5em;
-  width: 2em;
-  height: 2em;
-} 
+  width: 4.5rem;
+  height: 4.5rem;
+  background-color: lightblue
+}
 
 .modal {
   background-color: lightblue;
@@ -21,4 +24,4 @@ body {
   font-size: 25px;
   text-align: center;
   padding-bottom: 4%
-} 
+}
