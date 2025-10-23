@@ -6,15 +6,22 @@ body {
 
 .board-container {
   margin: auto;
+
 }
 
 .cell {
-  /* display: none; */
+  
   /* opacity: 0 */
   font-size: 1.5em;
   width: 4.5rem;
   height: 4.5rem;
-  background-color: lightblue
+  background-color: lightblue 
+  
+ 
+}
+
+.hidden{
+display: none;
 }
 
 .modal {
@@ -25,3 +32,4 @@ body {
   text-align: center;
   padding-bottom: 4%
 }
+

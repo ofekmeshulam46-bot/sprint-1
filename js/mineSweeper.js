@@ -1,14 +1,7 @@
 'use strict'
 
-// {
-// minesAroundCount: 4,
-// isRevealed: false,
-// isMine: false,
-// isMarked: false
-// }
-
 var MINE = '💣'
-
+var FLAG = '🚩'
 var gLevel = {
   SIZE: 4,
   MINES: 2,
@@ -33,6 +26,7 @@ function onInit() {
   console.log('gBoard:', gBoard)
   console.table(gBoard)
   renderBoard(gBoard)
+  // renderCell({i:2,j:3},9)
 }
 
 function buildBoard() {
@@ -89,9 +83,10 @@ function renderBoard() {
     for (var j = 0; j < columns; j++) {
       const cell = gBoard[i][j]
       const className = `cell cell-${i}-${j}`
-      var cellContent = cell.isMine  ?  MINE : cell.minesAroundCount  
-      strHTML += `<td class="${className}" onclick= onCellClicked(this,${i},${j})>
-                           ${cellContent}
+      var cellContent = cell.isMine ? MINE : cell.minesAroundCount
+      strHTML += `<td  class="${className}" onclick= onCellClicked(this,${i},${j}) oncontextmenu=onCellMarked(this,${i},${j},event) > <span class=hidden >${cellContent}</span>
+
+                           
                         </td>`
     }
     strHTML += '</tr>'
@@ -100,106 +95,41 @@ function renderBoard() {
   elContainer.innerHTML = strHTML
 }
 
-function onCellClicked(elCell, i, j) {
-  // var cell= document.querySelector(elcell.`cell-${i}-${j}`)
-  console.log('clicked:', elCell.innerHTML, i, j)
-  // cell.style.color = 'blueviolet'  // reg color wont work on emoji but background ye
-  // elCell.`cell-${i}-${j}`.color = 'blueviolet'
+function renderCell(location, value) {
+  // Select the elCell and set the value
+  var elCell = document.querySelector(`.cell-${location.i}-${location.j}`)
+  elCell.innerHTML = value
 }
-// buildBoard()
 
-// renderBoard(board)
+function onCellMarked(elCell, i, j, event) {
+  event.preventDefault()
+  const cell = document.querySelector(`.cell-${i}-${j} span`)
+  if (!cell.classList.contains('hidden')) return
+  else console.log(i, j)
+  // if (elCell.hidden) return
+  // else elCell.innerHTML=FLAG
+}
 
-// const WALL = '#'
-// const FOOD = '.'
-// const EMPTY = ' '
-// const SUPERFOOD = '🍽'
-// const CHERRY = '🍒'
+function onCellClicked(elCell, i, j) {
+  const cell = document.querySelector(`.cell-${i}-${j} span`)
 
-//   score: 0,
-// const gGame = {
-//   isOn: false,
-// }
-// var gFoodCount = 0
-// var elScore = document.querySelector('h2 .score ')
-// var elModal = document.querySelector('.modal')
-// var elModalText = document.querySelector('.modal h2 span')
-// var gCherryInterval
+  cell.classList.remove('hidden')
+  cell.addEventListener('contextmenu', (e) => {
+    e.preventDefault()
+  })
+}
 
-// function onInit() {
-//   gBoard = buildBoard()
 
-//   createPacman(gBoard)
-//   createGhosts(gBoard)
-//   console.table(gBoard)
-//   renderBoard(gBoard)
-//   gCherryInterval = setInterval(() => {
-//     addCherry()
-//   }, 15000)
-//   gFoodCount = 15 //55
-//   gGame.score = 0
-//   elScore.innerText = '0'
-//   gGame.isOn = true
-//   // elModal.innerText = elModal.innerHTML /// doesn't change to you won @@@
-//   elModal.hidden = true
-//   console.log('elModal:', elModal)
-// }
 
-// // location is an object like this - { i: 2, j: 7 }
 
-// function renderCell(location, value) {
-//   // Select the elCell and set the value
-//   const elCell = document.querySelector(`.cell-${location.i}-${location.j}`)
-//   elCell.innerHTML = value
-// }
 
-// function addCherry() {
-//   const emptyCell = findEmptyCells(gBoard)
-//   gBoard[emptyCell.i][emptyCell.j] = CHERRY
-//   renderCell(emptyCell, CHERRY)
-// }
+//   // var cell = document.querySelector(`.cell-${i}-${j} .hidden`)
+//   // cell.classList.remove('hidden')
 
-// function findEmptyCells() {
-//   var emptyCells = []
-//   for (var i = 0; i < gBoard.length; i++) {
-//     for (var j = 0; j < gBoard[0].length; j++) {
-//       const currCell = gBoard[i][j]
-//       //   console.table(gBoard)
-//       //   console.log('gBoard[i][j]:', gBoard[i][j])
-//       if (currCell === EMPTY) {
-//         emptyCells.push({ i, j })
-//         // console.log('emptyCells:', emptyCells)
-//       }
-//     }
-//   }
+//   cell.classList.remove('hidden')
 
-//   var emptyCell = emptyCells[getRandomIntExclusive(0, emptyCells.length)]
-//   return emptyCell
-// }
 
-// function updateScore(diff) {
-//   // update both the model and the dom for the score
-//   gGame.score += diff
-//   elScore.innerText = gGame.score
-// }
 
-// function gameOver(won) {
-//   console.log('Game Over')
-//   clearInterval(gIntervalGhosts)
-//   clearInterval(gCherryInterval)
-//   gGame.isOn = false
-//   renderCell(gPacman.location, EMPTY)
-//   elModalText.innerText = 'you won :)'
 
-//   if (!won) {
-//     elModalText.innerText = 'you lost!'
-//     // elModal.innerText = 'you lost!'
-//     console.log('elModal:', elModal)
-//     elModalText.style.color = 'black'
-//   }
-//   elModal.hidden = false
-// }
 
-// // function onPlayAgain() {
 
-// // }
