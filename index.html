@@ -9,18 +9,26 @@
   </head>
 
   <body onload="onInit()">
-    <h2>Score: <span class="score">0</span></h2>
+    <h2>Lives Remaining: <span class="lives"></span></h2>
 
     <table class="board-container">
       <tbody class="board"></tbody>
     </table>
 
-    <button onclick="onInit()">Restart</button>
+    <!-- <button onclick="onInit()">Restart</button> -->
+
+    <button class="emoji" onclick="onInit()"><span></span></button>
+    <div>
+      <button class="easy" onclick="setDifficulty(this)">easy</button>
+      <button class="easy" onclick="setDifficulty(this)">medium</button>
+      <button class="easy" onclick="setDifficulty(this)">hard</button>
+    </div>
 
     <div class="modal">
-      <button class="close-modal-btn" onclick="onRestart()">play again</button>
       <h2><span>"you won!"</span></h2>
     </div>
+
+    <div class="bottom-screen"></div>
 
     <script src="js/utils.js"></script>
     <script src="js/mineSweeper.js"></script>

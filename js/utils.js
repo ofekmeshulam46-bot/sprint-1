@@ -29,12 +29,11 @@ function countNeighbors(rowIdx, colIdx, mat) {
             if (j < 0 || j >= mat[i].length) continue
             if (i === rowIdx && j === colIdx) continue
 
-            if (mat[i][j] === LIFE) neighborsCount++
+            if (mat[i][j].isMine) neighborsCount++
         }
     }
     return neighborsCount
 }
-
 
 
 
