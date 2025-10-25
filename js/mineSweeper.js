@@ -5,10 +5,11 @@ const FLAG = '🚩'
 const NORMAL_SMILEY = '😀'
 const HAPPY_SMILEY = ' 😎'
 const SAD_SMILEY = '🤯'
-
+const LIGHTBULB = '<img src="imgs/hint.PNG">'
+const LIT_LIGHTBULB = '<img src="imgs/clicked_hint.PNG">'
 var gLevel = {
   SIZE: 4,
-  MINES: 3,
+  MINES: 2,
 }
 
 var gGame = {
@@ -23,41 +24,71 @@ var gBoard
 var gIsFirstClick
 var gFirstCell
 var gLives
+var gScore
+var gTimerInterval = null
+var gStartTime
+var gTimeLapsed
+var gIsHint
 const gElModal = document.querySelector('.modal span')
-var gElEmoji = document.querySelector('.emoji span')
-var gElHeader = document.querySelector('.lives')
+const gElEmoji = document.querySelector('.emoji span')
+const gElHeader = document.querySelector('.lives')
+const elScore = document.querySelector('h2 .score')
+const elHintOne = document.querySelector('.-hint ')
+const elHintTwo = document.querySelector('.-two ')
+const elHintThree = document.querySelector('.-three ')
 
 function onInit() {
-  gLives = 3
-  gElHeader.innerHTML = gLives
   gGame.isOn = true
   gSafeCells = gLevel.SIZE ** 2
-  gBoard = buildBoard()
-  renderBoard(gBoard)
+  gLives = 3
+  gElHeader.innerHTML = gLives
+  gScore = 0
+  elScore.innerHTML = gScore
+  gIsHint = false
   gElModal.innerHTML = ''
   gElEmoji.innerHTML = NORMAL_SMILEY
+  elHintOne.innerHTML = LIGHTBULB
+  elHintTwo.innerHTML = LIGHTBULB
+  elHintThree.innerHTML = LIGHTBULB
+  gBoard = buildBoard()
+  renderBoard(gBoard)
 }
 
 function setDifficulty(button) {
-  if (button.innerHTML === 'easy') {
+  if (button.innerHTML === 'Easy') {
     gLevel = {
       SIZE: 4,
       MINES: 2,
     }
+    //todo: stop timer show without reset
+
+    // gTimerMilliSeconds = 0
+    setTimerToZero()
     onInit()
+    // gTimeLapsed = 0
+    // updateTimerDisplay()
+    // startTimer()
   }
-  if (button.innerHTML === 'medium') {
+  if (button.innerHTML === 'Medium') {
     gLevel = {
       SIZE: 8,
       MINES: 14,
     }
+    //todo: stop timer show without reset
+
+    // clearInterval(gTimerInterval)
+    setTimerToZero()
     onInit()
   }
-  if (button.innerHTML === 'hard') {
+  if (button.innerHTML === 'Hard') {
     gLevel = {
       SIZE: 12,
       MINES: 32,
     }
+    //todo: stop timer show without reset
+
+    // clearInterval(gTimerInterval)
+    setTimerToZero()
     onInit()
   }
 }
@@ -72,6 +103,7 @@ function buildBoard() {
         isRevealed: false,
         isMine: false,
         isMarked: false,
+        isHinted: false,
       }
     }
   }
@@ -118,28 +150,6 @@ function negsMinesCount(rowIdx, colIdx, mat) {
   return mat
 }
 
-// function settingMinesAroundCount(board) {
-//   for (var i = 0; i < board.length; i++) {
-//     for (var j = 0; j < board[i].length; j++) {
-//       negsMinesCount(i, j, board)
-//     }
-//   }
-// }
-
-// function negsMinesCount(rowIdx, colIdx, mat) {
-//   for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
-//     if (i < 0 || i >= mat.length) continue
-
-//     for (var j = colIdx - 1; j <= colIdx + 1; j++) {
-//       if (j < 0 || j >= mat[i].length) continue
-//       if (i === rowIdx && j === colIdx) continue
-
-//       if (mat[i][j].isMine === true) mat[rowIdx][colIdx].minesAroundCount++
-//     }
-//   }
-//   return mat
-// }
-
 function renderBoard() {
   var strHTML = ''
   var lines = gBoard.length
@@ -169,8 +179,9 @@ function renderCell(location, value) {
 function onCellMarked(elCell, i, j, event) {
   event.preventDefault()
   if (!gGame.isOn) return
-  const flagCell = document.querySelector(`.cell-${i}-${j} .flag`)
   if (gBoard[i][j].isRevealed) return
+  // const isFirstMark
+  const flagCell = document.querySelector(`.cell-${i}-${j} .flag`)
   if (gBoard[i][j].isMarked) {
     gBoard[i][j].isMarked = false
     flagCell.innerHTML = ''
@@ -209,6 +220,7 @@ function onCellClicked(elCell, i, j) {
   if (!gGame.isOn) return
   var isFirstCell = firstClick(i, j)
   if (isFirstCell) {
+    startTimer()
     gFirstCell = { i, j }
     settingRandomMines()
     settingMinesAroundCount(gBoard)
@@ -221,7 +233,15 @@ function onCellClicked(elCell, i, j) {
   if (!gBoard[i][j].isMine && !gBoard[i][j].isRevealed) {
     gBoard[i][j].isRevealed = true
     gSafeCells--
-    countNeighbors(i, j, gBoard)
+    gScore++
+    elScore.innerHTML = gScore
+    // if (gIsHint) {
+    //   temporaryReveal(i, j, gBoard)
+    // }
+    if (gBoard[i][j].minesAroundCount === 0) {
+      countNeighbors(i, j, gBoard)
+    }
+
     if (!gSafeCells && checkMineMarks()) {
       gameOver(true)
     }
@@ -231,47 +251,51 @@ function onCellClicked(elCell, i, j) {
     gElHeader.innerHTML = gLives
     if (gLives > 0) {
       setTimeout(() => {
-        alert('life remaining:' + ' ' + gLives)
-      }, 400)
-      setTimeout(() => {
         gBoard[i][j].isRevealed = false
         cell.classList.add('hidden')
-      }, 1500)
+        if (!gGame.isOn) {
+          gBoard[i][j].isRevealed = true
+          cell.classList.remove('hidden')
+        }
+      }, 900)
       return
-    }
-    for (var k = 0; k < gBoard.length; k++) {
-      for (var l = 0; l < gBoard[0].length; l++) {
-        if (gBoard[k][l].isMine) {
-          var mineCell = document.querySelector(`.cell-${k}-${l} span`)
-          var flagMine = document.querySelector(`.cell-${k}-${l} .flag`)
-          flagMine.innerHTML = ''
-          mineCell.classList.remove('hidden')
+    } else {
+      for (var k = 0; k < gBoard.length; k++) {
+        for (var l = 0; l < gBoard[0].length; l++) {
+          if (gBoard[k][l].isMine) {
+            var mineCell = document.querySelector(`.cell-${k}-${l} span`)
+            var flagMine = document.querySelector(`.cell-${k}-${l} .flag`)
+            flagMine.innerHTML = ''
+            mineCell.classList.remove('hidden')
+          }
         }
       }
+      gameOver(false)
     }
-    gameOver(false)
   }
 }
 
-function expandReveal(board, elCell, i, j) {
-  countNeighbors(i, j, board)
-  return
+function giveHint(hint) {
+  hint.innerHTML = LIT_LIGHTBULB
+  gIsHint = true
 }
+
 
 function gameOver(isWin) {
   if (isWin) {
     gElModal.style.color = 'white'
     gElModal.innerHTML = 'you won!'
-    gElModal.style.textalign = 'center' //not working
+    gElModal.style.textalign = 'center' 
     gElEmoji.innerHTML = HAPPY_SMILEY
   } else if (!isWin) {
     gElModal.innerHTML = 'you lost!'
     gElModal.style.color = 'black'
-    gElModal.style.textalign = 'center' //not working
+    gElModal.style.textalign = 'center' 
     gElEmoji.innerHTML = SAD_SMILEY
   }
-  gElModal.classList.remove('hidden') //= display false didnt work
+  gElModal.classList.remove('hidden') // display=false didnt work
   gGame.isOn = false
+  stopTimer() // this and settimertozero dont work well
 }
 
 function countNeighbors(rowIdx, colIdx, mat) {
@@ -287,13 +311,94 @@ function countNeighbors(rowIdx, colIdx, mat) {
       if (!mat[i][j].isMine && !mat[i][j].isRevealed) {
         mat[i][j].isRevealed = true
         gSafeCells--
+        gScore++
+        elScore.innerHTML = gScore
         cell.classList.remove('hidden')
         if (mat[i][j].isMarked) {
           mat[i][j].isMarked = false
           flaggedCell.innerHTML = ''
         }
+        if (mat[i][j].minesAroundCount === 0) {
+          countNeighbors(i, j, gBoard)
+        }
       }
     }
   }
   return
+}
+
+function temporaryReveal(rowIdx, colIdx, mat) {
+  for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
+    if (i < 0 || i >= mat.length) continue
+
+    for (var j = colIdx - 1; j <= colIdx + 1; j++) {
+      if (j < 0 || j >= mat[i].length) continue
+      if (i === rowIdx && j === colIdx) continue
+      var cell = document.querySelector(`.cell-${i}-${j} span`)
+      var flaggedCell = document.querySelector(`.cell-${i}-${j} .flag`)
+      if (!mat[i][j].isRevealed) {
+        mat[i][j].isHinted = true
+      }
+      if (!mat[i][j].isHinted) return
+      mat[i][j].isRevealed = true
+      cell.classList.remove('hidden')
+      // setTimeout(() => {
+      //   mat[i][j].isRevealed = false
+      //   cell.classList.add('hidden')
+      // }, 1500)
+      cell.style.color = 'yellow'
+      setTimeout(() => {
+        cell.style.color = 'black'
+        renderBoard()
+      }, 1500)
+
+      // if (mat[i][j].isMarked) {
+      //   mat[i][j].isMarked = false
+      //   flaggedCell.innerHTML = ''
+      //   setTimeout(() => {
+      //     mat[i][j].isMarked = true
+      //     flaggedCell.innerHTML = FLAG
+      //   }, 1500)
+      // }
+      console.log('i,j:', i, j)
+      // setTimeout(() => {
+      //   cell.style.color = 'black'
+      //   gBoard[i][j].isRevealed = false
+      //   cell.classList.add('hidden')
+      //   if (!gGame.isOn && cell.isMine) {
+      //     gBoard[i][j].isRevealed = true
+      //     cell.classList.remove('hidden')
+      //   }
+      // }, 500)
+    }
+  }
+}
+
+function startTimer() {
+  gStartTime = Date.now()
+  gTimerInterval = setInterval(updateTimerDisplay, 31)
+}
+
+function stopTimer() {
+  clearInterval(gTimerInterval)
+  // gTimerInterval = null
+  // gStartTime = Date.now()
+  updateTimerDisplay()
+}
+
+function setTimerToZero() {
+  startTimer()
+  stopTimer()
+}
+
+function updateTimerDisplay() {
+  var now = Date.now()
+  var gTimeLapsed = now - gStartTime
+  const ms = (gTimeLapsed % 1000) + ''
+  const totalSeconds = (gTimeLapsed - ms) / 1000
+  const seconds = (totalSeconds % 60) + ''
+  const minutes = Math.floor((totalSeconds - seconds) / 60) + ''
+
+  const elTimer = document.querySelector('.timer')
+  elTimer.innerText = `${seconds.padStart(3, '0')}`
 }
